@@ -25,13 +25,28 @@ if [ -z "$UBOOT_CONFIGFILE" ]; then
 fi
 
 mkdir -p $RELEASE_DIR/3rdparty/bootloader
-  cp -PR $BUILD/u-boot-*/$UBOOT_CONFIGFILE $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
+  if [ -e $BUILD/u-boot-*/$UBOOT_CONFIGFILE ]; then
+    cp -PR $BUILD/u-boot-*/$UBOOT_CONFIGFILE $RELEASE_DIR/3rdparty/bootloader
+  fi
   cp -PR $BUILD/u-boot-*/SPL* $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
   cp -PR $BUILD/u-boot-*/u-boot*.imx $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
+  #NOTE: sunxi u-boot build folder contains intermediate .img files which are not needed
+  if [ -f $BUILD/u-boot-*/uboot-sunxi-opi2.bin -o -f $BUILD/u-boot-*/uboot-sunxi-bpim3.bin ]; then
+    cp -PR $BUILD/u-boot-*/uboot-sunxi-*.bin $RELEASE_DIR/3rdparty/bootloader 2>/dev/null
+  else
   cp -PR $BUILD/u-boot-*/u-boot*.img $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
+  fi
 
   cp -PR $PROJECT_DIR/$PROJECT/bootloader/uEnv*.txt $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
   cp -PR $HOME/.openelec/bootloader/* $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
   cp -PR $HOME/.openelec/projects/$PROJECT/bootloader/* $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
 
   cp -PR $BUILD/linux-*/arch/$TARGET_KERNEL_ARCH/boot/dts/*.dtb $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :
+  case $PROJECT in
+    Odroid_C2)
+      cp -PR $BUILD/$BOOTLOADER-*/sd_fuse/bl1.bin.hardkernel $RELEASE_DIR/3rdparty/bootloader/bl1
+      cp -PR $BUILD/$BOOTLOADER-*/sd_fuse/u-boot.bin $RELEASE_DIR/3rdparty/bootloader/u-boot
+      cp -PR $PROJECT_DIR/$PROJECT/bootloader/boot.ini $RELEASE_DIR/3rdparty/bootloader
+      ;;
+  esac
+  cp -PR $BUILD/linux-*/*.fex $RELEASE_DIR/3rdparty/bootloader 2>/dev/null || :

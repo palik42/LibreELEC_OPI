@@ -16,38 +16,37 @@
 #  along with OpenELEC.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-PKG_NAME="RTL8188EU"
-PKG_VERSION="ced2b64"
+PKG_NAME="sunxi-sys-utils"
+PKG_VERSION="1.0"
 PKG_REV="1"
-PKG_ARCH="any"
+PKG_ARCH="arm"
 PKG_LICENSE="GPL"
-# realtek: PKG_SITE="http://www.realtek.com.tw/downloads/downloadsView.aspx?Langid=1&PFid=48&Level=5&Conn=4&ProdID=274&DownTypeID=3&GetDown=false&Downloads=true"
-PKG_SITE="https://github.com/lwfinger/rtl8188eu"
-PKG_URL="https://github.com/lwfinger/rtl8188eu/archive/$PKG_VERSION.tar.gz"
-PKG_SOURCE_DIR="rtl8188eu-$PKG_VERSION*"
-PKG_DEPENDS_TARGET="toolchain linux"
-PKG_NEED_UNPACK="$LINUX_DEPENDS"
+PKG_SITE="http://github.com/jernejsk/OpenELEC-OPi2"
+PKG_URL=""
+PKG_DEPENDS_TARGET="toolchain"
 PKG_PRIORITY="optional"
-PKG_SECTION="driver"
-PKG_SHORTDESC="Realtek RTL81xxEU Linux 3.x driver"
-PKG_LONGDESC="Realtek RTL81xxEU Linux 3.x driver"
-
+PKG_SECTION="system"
+PKG_SHORTDESC="Sunxi system utilities"
+PKG_LONGDESC="Sunxi utilities for driver loading and eMMC installation"
 PKG_IS_ADDON="no"
 PKG_AUTORECONF="no"
 
-pre_make_target() {
-  unset LDFLAGS
-}
-
 make_target() {
-  make V=1 \
-       ARCH=$TARGET_KERNEL_ARCH \
-       KSRC=$(kernel_path) \
-       CROSS_COMPILE=$TARGET_PREFIX \
-       CONFIG_POWER_SAVING=n
+  $CC $PKG_DIR/src/read_fex.c -o read_fex
 }
 
 makeinstall_target() {
-  mkdir -p $INSTALL/lib/modules/$(get_module_dir)/$PKG_NAME
-    cp *.ko $INSTALL/lib/modules/$(get_module_dir)/$PKG_NAME
+  mkdir -p $INSTALL/usr/bin
+  cp $PKG_DIR/bin/* $INSTALL/usr/bin
+  cp read_fex $INSTALL/usr/bin
+
+  mkdir -p $INSTALL/usr/lib/libreelec
+  cp $PKG_DIR/scripts/* $INSTALL/usr/lib/libreelec
+}
+
+post_install() {
+  enable_service sunxi-bt-load.service
+  enable_service sunxi-wifi-load.service
+  enable_service sunxi-poweroff.service
+  enable_service sunxi-suspend.service
 }
